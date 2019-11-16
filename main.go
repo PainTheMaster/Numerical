@@ -10,7 +10,7 @@ func main() {
 	var v, del [2]float64
 
 	v[0] = 1.0
-	v[1] = 0.0
+	v[1] = 0.5
 
 	var rerrx, rerry float64
 	rerrx = 1.0
@@ -18,7 +18,7 @@ func main() {
 
 	var count int
 
-	for count = 0; (math.Abs(rerrx) <= 1.0e-4 && math.Abs(rerry) <= 1.0e-4) || count > 99; count++ {
+	for count = 0; (math.Abs(rerrx) >= 1.0e-4 || math.Abs(rerry) >= 1.0e-4) && count < 99; count++ {
 
 		invJ[0][0] = fx(v[0], v[1])
 		invJ[0][1] = fy(v[0], v[1])
@@ -32,11 +32,11 @@ func main() {
 		buf = invJ[0][0]
 		invJ[0][0] = invJ[1][1] * invAdbc
 		invJ[1][1] = buf * invAdbc
-		invJ[0][1] *= invAdbc
-		invJ[1][0] *= invAdbc
+		invJ[0][1] *= (-1.0 * invAdbc)
+		invJ[1][0] *= (-1.0 * invAdbc)
 
-		del[0] = invJ[0][0]*v[0] + invJ[0][1]*v[1]
-		del[1] = invJ[1][0] * v[0] * invJ[1][1] * v[1]
+		del[0] = -1.0 * (invJ[0][0]*f(v[0], v[1]) + invJ[0][1]*g(v[0], v[1]))
+		del[1] = -1.0 * (invJ[1][0]*f(v[0], v[1]) + invJ[1][1]*g(v[0], v[1]))
 
 		if del[0] == 0.0 {
 			rerrx = 1.0
@@ -54,19 +54,20 @@ func main() {
 		v[1] += del[1]
 	}
 
-	fmt.Println("x, y: ", v[0], v[1])
+	fmt.Println("x, y: ", v[0], ",", v[1])
+	fmt.Println("count: ", count)
 }
 
 func f(x, y float64) float64 {
-	return (x*x + y*y - 5.0/2.0)
+	return (x*x + y*y - 4.0)
 }
 
 func fx(x, y float64) float64 {
-	return 2 * x
+	return 2.0 * x
 }
 
 func fy(x, y float64) float64 {
-	return 2 * y
+	return 2.0 * y
 }
 
 func g(x, y float64) float64 {
